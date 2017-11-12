@@ -1,0 +1,21 @@
+{
+  "nodes": {
+    "44137": "temperature",
+    "20931": "humidity",
+    "28317": "pump"
+
+  },
+  "mqtt": {
+    "host": "broker.mqtt-cpe.ml",
+    "port": 1883,
+    "keep_alive": 60,
+    "transport": "tcp",
+    "root_topic": "backyard_iot"
+  },
+  "pump": {
+    "upper": 400,
+    "lower": 300
+  },
+  "serial": "/dev/tty.usbmodem1421",
+  "webhook": "http://maker.ifttt.com/trigger/backyard/with/key/bTHj10q8-WEw2cqyqrd0nr"
+}
