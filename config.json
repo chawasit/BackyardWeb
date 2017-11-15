@@ -16,6 +16,10 @@
     "upper": 400,
     "lower": 300
   },
-  "serial": "/dev/tty.usbmodem1421",
-  "webhook": "http://maker.ifttt.com/trigger/backyard/with/key/bTHj10q8-WEw2cqyqrd0nr"
+  "serial": "/dev/tty.usbmodem1411",
+  "webhook": "http://maker.ifttt.com/trigger/backyard/with/key/bTHj10q8-WEw2cqyqrd0nr",
+  "log": {
+    "value": "http://127.0.0.1:8000/value",
+    "notification": "http://127.0.0.1:8000/notification"
+  }
 }

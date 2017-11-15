@@ -25,11 +25,15 @@ humidity = 0
 pump = False
 auto_pump = True
 
+temperature_time = time.time()
+humidity_time = time.time()
+pump_time = time.time()
+
 status = Event()
 
 
 def process_data(queue):
-    global temperature, humidity
+    global temperature, humidity, temperature_time, humidity_time, pump_time
     while True:
         if not queue.empty():
             data = queue.get()
@@ -46,8 +50,13 @@ def process_data(queue):
                         r0 = 10.0e3
                         t0 = 298.0
                         temperature = 1.0 / ((1.0 / t0) + ((1.0 / b) * log(r / r0))) - 273
+                        temperature_time = time.time()
                     elif node_name == 'humidity':
                         humidity = int(sensor1)
+                        humidity_time = time.time()
+                    elif node_name == 'pump':
+                        pump_time = time.time()
+
                 except:
                     print "Unknow node ({})".format(short_address)
             elif command_code == 8:
@@ -57,15 +66,50 @@ def process_data(queue):
 def logger(mqtt_client):
     time.sleep(5)
     global temperature, humidity, pump, auto_pump
+    temperature_online = True
+    humidity_online = True
+    pump_online = True
     while True:
-        # send to laravel
+        try:
+            r = requests.post(config['log']['value'], data={
+                'temperature': temperature,
+                'humidity': humidity,
+                'pump': pump
+            })
+            print "Logger sent {}".format(r.status_code)
+            mqtt_client.publish(config['mqtt']['root_topic'] + "/value", json.dumps({
+                'temperature': temperature,
+                'humidity': humidity,
+                'pump': pump,
+            }))
+            print "temp={}, humidity={}, pump={}, auto={}".format(temperature, humidity, pump, auto_pump)
 
-        mqtt_client.publish(config['mqtt']['root_topic'] + "/value", json.dumps({
-            'temperature': temperature,
-            'humidity': humidity,
-            'pump': pump
-        }))
-        print "temp={}, humidity={}, pump={}, auto={}".format(temperature, humidity, pump, auto_pump)
+            if time.time() - temperature_time > 30:
+                if temperature_online:
+                    send_notification("Temperature Node is offline")
+                    temperature_online = False
+            elif not temperature_online:
+                send_notification("Temperature Node is online")
+                temperature_online = True
+
+            if time.time() - humidity_time > 30:
+                if humidity_online:
+                    send_notification("Humidity Node is offline")
+                    humidity_online = False
+            elif not humidity_online:
+                send_notification("Humidity Node is online")
+                humidity_online = True
+
+            if time.time() - pump_time > 30:
+                if temperature_online:
+                    send_notification("Pump Node is offline")
+                    pump_online = False
+            elif not pump_online:
+                send_notification("Pump Node is online")
+                pump_online = True
+
+        except Exception as e:
+            print "Logger Error " + e.value
         time.sleep(5)
 
 
@@ -75,8 +119,13 @@ def send_notification(message):
         print webhook, message
         res = requests.post(webhook, data={'value1': message})
         print "Send webhook {}".format(res.status_code)
-    except:
-        pass
+        res = requests.post(config['log']['notification'], data={'message': message})
+        print "Send noti logger {}".format(res.status_code)
+        mqtt_client.publish(config['mqtt']['root_topic'] + "/notification", json.dumps({
+            'message': message,
+        }))
+    except Exception as e:
+            print "Logger Error " + e.value
 
 
 def auto_pump_condition():
