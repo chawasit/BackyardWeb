@@ -224,6 +224,15 @@ $(document).ready(function() {
             let ctime = moment().format("YYYY-MM-DD HH:mm:ss")
             let newData = JSON.parse(payload)
             addData(myLineChart, ctime, newData)
+
+            let temperature = newData['temperature']
+            let humidity = newData['humidity']
+
+            temp_progress.css('width', temperature + '%')
+            temp_value.text('' + temperature)
+
+            humidity_progress.css('width', humidity*100/1024 + '%')
+            humidity_value.text('' + humidity)
         }else if (topic == NOTI_TOPIC) {
             let ctime = moment().format("YYYY-MM-DD HH:mm:ss")
             let newData = JSON.parse(payload)
@@ -236,13 +245,13 @@ $(document).ready(function() {
         }else if (topic == PUMP_TOPIC) {
             pump_status = parseInt(payload)
             if (pump_status == 0) {
-                pump_progress.css('width', 0 + 'px')
+                pump_progress.css('width', 0 + '%')
                 pump_value.text('Off')
             }else if (pump_status == 1) {
-                pump_progress.css('width', 100 + 'px')
+                pump_progress.css('width', 100 + '%')
                 pump_value.text('On')
             }else if (pump_status == 2) {
-                pump_progress.css('width', 50 + 'px')
+                pump_progress.css('width', 50 + '%')
                 pump_value.text('Auto')
             }
         }
