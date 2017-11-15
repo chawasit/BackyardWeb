@@ -91,14 +91,14 @@ $(document).ready(function() {
 
     let data = function() {
         return {
-            labels : datas.map(d => d['created_at']) || [],
+            labels : datas.map(d => d['created_at']),
             datasets : [
                 {
                     label: "Temperature",
                     borderColor: chartColors.red,
                     backgroundColor: chartColors.redA,
                     fill: false,
-                    data : datas.map(d => d['temperature']) || [],
+                    data : datas.map(d => d['temperature']),
                     yAxisID: "y-axis-1"
                 },
                 {
@@ -106,7 +106,7 @@ $(document).ready(function() {
                     borderColor: chartColors.blue,
                     backgroundColor: chartColors.blueA,
                     fill: false,
-                    data : datas.map(d => d['humidity']) || [],
+                    data : datas.map(d => d['humidity']),
                     yAxisID: "y-axis-2"
                 },
                 {
@@ -114,7 +114,7 @@ $(document).ready(function() {
                     borderColor: chartColors.green,
                     backgroundColor: chartColors.greenA,
                     fill: true,
-                    data : datas.map(d => d['pump']?100:0) || [],
+                    data : datas.map(d => d['pump']?100:0),
                     yAxisID: "y-axis-1"
                 }
             ]
@@ -223,6 +223,7 @@ $(document).ready(function() {
         if (topic == VALUE_TOPIC) {
             let ctime = moment().format("YYYY-MM-DD HH:mm:ss")
             let newData = JSON.parse(payload)
+            console.log(newData)
             addData(myLineChart, ctime, newData)
 
             let temperature = newData['temperature']
