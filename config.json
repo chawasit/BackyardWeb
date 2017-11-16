@@ -13,7 +13,7 @@
     "root_topic": "backyard_iot"
   },
   "pump": {
-    "upper": 400,
+    "upper": 600,
     "lower": 300
   },
   "serial": "/dev/tty.usbmodem1411",

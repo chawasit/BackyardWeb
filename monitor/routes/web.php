@@ -23,11 +23,11 @@ Route::get('/log/{from}/{to}', 'MonitorController@log')->where([
 ]);
 
 Route::get('/history', 'MonitorController@history');
-Route::post('/history', 'MonitorController@historyRedirect');
-Route::get('/history/{from}/{to}', 'MonitorController@historyView')->where([
-    'from' => '[0-9]{4}-[0-9]{2}-[0-9]{2}'
-    , 'to' => '[0-9]{4}-[0-9]{2}-[0-9]{2}'
-]);
+Route::post('/history', 'MonitorController@historyView');
+// Route::get('/history/{from}/{to}', 'MonitorController@historyView')->where([
+//     'from' => '[0-9]{4}-[0-9]{2}-[0-9]{2}'
+//     , 'to' => '[0-9]{4}-[0-9]{2}-[0-9]{2}'
+// ]);
 
 Route::get('/notification', 'MonitorController@notification');
 Route::get('/notification', 'MonitorController@notification');

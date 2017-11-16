@@ -20,7 +20,7 @@ class LogController extends Controller
             $log = new Log();
             $log->temperature = (int) $request->input('temperature');
             $log->humidity = (int) $request->input('humidity');
-            $log->pump = (bool) $request->input('pump');
+            $log->pump = $request->input('pump');
             $log->save();
 
             return "True";

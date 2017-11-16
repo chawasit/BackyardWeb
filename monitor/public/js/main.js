@@ -12,21 +12,7 @@ $(document).ready(function() {
     var LINECHART = $("#lineChart")
     var datas = [];
     var myLineChart = 0;
-
-    var jsonData = $.ajax({
-        url: 'http://localhost:8000/log',
-        dataType: 'json',
-    }).done(function (results) {
-        datas = results
-        myLineChart = new Chart(LINECHART, {
-            type: 'line',
-            data: data(),
-            options: options
-        });
-    });
-
     
-
     var count = 60;
 
     var options = {
@@ -45,8 +31,8 @@ $(document).ready(function() {
                 position: "left",
                 id: "y-axis-1",
                 ticks: {
-                    min: 100,
-                    max: 0
+                    min: 0,
+                    max: 100
                 }
             }, {
                 label: "Humidity",
@@ -55,8 +41,8 @@ $(document).ready(function() {
                 position: "right",
                 id: "y-axis-2",
                 ticks: {
-                    min: 1024,
-                    max: 0
+                    min: 0,
+                    max: 1000
                 },
             }],
             xAxes: [{
@@ -120,6 +106,18 @@ $(document).ready(function() {
             ]
         }
     }
+
+    var jsonData = $.ajax({
+        url: '/log',
+        dataType: 'json',
+    }).done(function (results) {
+        datas = results
+        myLineChart = new Chart(LINECHART, {
+            type: 'line',
+            data: data(),
+            options: options
+        });
+    });
    
     function addData(chart, label, data) {
         chart.data.labels.push(label);
@@ -130,6 +128,8 @@ $(document).ready(function() {
             var newData = data[dataset.label.toLowerCase()]
             if (dataset.label.toLowerCase() == 'pump')
                 newData = newData ? 100 : 0
+            if (dataset.label.toLowerCase() == 'temperature')
+                newData = parseInt(newData)
 
             dataset.data.push(newData);
             if (dataset.data.length > count)
@@ -138,28 +138,7 @@ $(document).ready(function() {
         chart.update();
     }
 
-    var humidity = 500
     var pump = false
-    // setInterval(function () {
-    //         let ctime = moment().format("YYYY-MM-DD HH:mm:ss")
-    //         let temperature = Math.floor((Math.random() * 17) + 1) + 20
-    //         let change = Math.floor((Math.random() * 15) + 1)
-    //         humidity += pump ? Math.floor((Math.random() * 40) + 1) + 10 : -Math.floor((Math.random() * 15) + 1)
-
-    //         if (humidity < 300)
-    //             pump = true
-    //         if (humidity > 500)
-    //             pump = false
-
-    //         console.log(ctime + " " + temperature + " " + humidity + " " + pump)
-    //         let newData = {
-    //             'temperature': temperature,
-    //             'humidity': humidity,
-    //             'pump': pump ? 100 : 0
-    //         }
-    //         addData(myLineChart, ctime, newData)
-    //     }, 1000
-    // );
     
     var pump_status = 0
     var broker_progress = $("#broker_progress");
@@ -188,7 +167,7 @@ $(document).ready(function() {
 
     var client = new Messaging.Client(hostname, port, clientid);
  
-    var options = {
+    var mqtt_options = {
 
         //connection attempt timeout in seconds
         timeout: 3,
@@ -197,6 +176,7 @@ $(document).ready(function() {
         onSuccess: function () {
             console.log("Connected");
             broker_value.text("OK");
+            broker_progress.css("width", "100%")
 
             // Subscibe TOPIC
             client.subscribe(VALUE_TOPIC, {qos: 2});
@@ -208,12 +188,13 @@ $(document).ready(function() {
         onFailure: function (message) {
             console.log("Connection failed: " + message.errorMessage);
             broker_value.text("ERROR");
+            broker_progress.css("width", "0%")
         },
 
     };
      
     //Attempt to connect
-    client.connect(options);
+    client.connect(mqtt_options);
 
     client.onMessageArrived = function (message) {
         var topic = message.destinationName;
@@ -230,7 +211,7 @@ $(document).ready(function() {
             let humidity = newData['humidity']
 
             temp_progress.css('width', temperature + '%')
-            temp_value.text('' + temperature)
+            temp_value.text(parseInt(temperature) + 'c')
 
             humidity_progress.css('width', humidity*100/1024 + '%')
             humidity_value.text('' + humidity)

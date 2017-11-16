@@ -9,7 +9,7 @@
     <meta name="robots" content="all,follow">
     <!-- Bootstrap CSS-->
     <link rel="stylesheet" href="/vendor/bootstrap/css/bootstrap.min.css">
-    <link rel="stylesheet" href="/vendor/bootstrap-datepicker/css/bootstrap-datepicker.min.css">
+    <link rel="stylesheet" href="/vendor/datetimepicker/css/bootstrap-datetimepicker.min.css">
     <!-- Fontastic Custom icon font-->
     <link rel="stylesheet" href="/css/fontastic.css">
     <!-- Font Awesome CSS-->
@@ -93,17 +93,17 @@
         100% {
             -webkit-transform: rotate(-360deg);
                     transform: rotate(-360deg); } }
-        .loading {
-          background: #444;
-          position: fixed;
-          z-index: 999;
-          overflow: show;
-          margin: auto;
-          left:0;
-          right:0;
-          top:0;
-          bottom:0;
-        }
+      .loading {
+        background: #444;
+        position: fixed;
+        z-index: 999;
+        overflow: show;
+        margin: auto;
+        left:0;
+        right:0;
+        top:0;
+        bottom:0;
+      }
     </style>
   </head>
   <body>
@@ -137,7 +137,7 @@
           </div>
         </nav>
       </header>
-      <div class="page-content d-flex align-items-stretch">
+      <div class="page-content d-flex align-items-stretch" style="min-height: 50em;">
         <!-- Side Navbar -->
         <nav class="side-navbar">
           <!-- Sidebar Header-->
@@ -175,15 +175,19 @@
                       <h3 class="h4">Select Date</h3>
                     </div>
                     <div class="card-body">
-                      <form class="form-inline" method="post">
+                      <form class="form-inline" action="/history" method="post">
                         {{ csrf_field() }}
-                        <div class="form-group">
-                          <label for="inlineFormInput" class="sr-only">From</label>
-                          <input id="inlineFormInput" type="text" name="from" placeholder="yyyy-mm-dd" class="mx-sm-3 form-control datepicker">
+                        <div class='input-group date' id='datetimepicker1'>
+                            <input type='text' name="from" class="form-control" placeholder="01/31/2017 11:45 AM"/>
+                            <span class="input-group-addon">
+                                <span class="fa fa-calendar"></span>
+                            </span>
                         </div>
-                        <div class="form-group">
-                          <label for="inlineFormInputGroup" class="sr-only">To</label>
-                          <input id="inlineFormInputGroup" type="text" name="to" placeholder="yyyy-mm-dd" class="mx-sm-3 form-control form-control datepicker">
+                        <div class='input-group date' id='datetimepicker2'>
+                            <input type='text' name="to" class="form-control" placeholder="01/31/2017 1:10 PM"/>
+                            <span class="input-group-addon">
+                                <span class="fa fa-calendar"></span>
+                            </span>
                         </div>
                         <div class="form-group">
                           <input type="submit" value="Submit" class="mx-sm-3 btn btn-primary">
@@ -195,7 +199,7 @@
               </div>
             </div>
           </section>
-          @isset($data)
+
           <!-- Dashboard Counts Section-->
           <section class="dashboard-counts no-padding-bottom">
             <div class="container-fluid">
@@ -206,10 +210,10 @@
                     <div class="icon bg-violet"><i class="fa fa-tint"></i></div>
                     <div class="title"><span>Lowest<br>Humidity</span>
                       <div class="progress">
-                        <div role="progressbar" style="width: {{ $lowHumidity*100/1024 }}%; height: 4px;" aria-valuenow="{{ $lowHumidity*100/1024 }}" aria-valuemin="0" aria-valuemax="100" class="progress-bar bg-violet"></div>
+                        <div role="progressbar" style="width: {{ isset($lowHumidity)?$lowHumidity*100/1024:0 }}%; height: 4px;" aria-valuenow="{{ isset($lowHumidity)?$lowHumidity*100/1024:0 }}" aria-valuemin="0" aria-valuemax="100" class="progress-bar bg-violet"></div>
                       </div>
                     </div>
-                    <div class="number"><strong>{{ $lowHumidity }}</strong></div>
+                    <div class="number"><strong>{{ $lowHumidity or 0 }}</strong></div>
                   </div>
                 </div>
                 <!-- Item -->
@@ -218,10 +222,10 @@
                     <div class="icon bg-blue"><i class="fa fa-tint"></i></div>
                     <div class="title"><span>Highest<br>Humidity</span>
                       <div class="progress">
-                        <div role="progressbar" style="width: {{ $maxHumidity*100/1024 }}%; height: 4px;" aria-valuenow="{{ $maxHumidity*100/1024 }}" aria-valuemin="0" aria-valuemax="100" class="progress-bar bg-violet"></div>
+                        <div role="progressbar" style="width: {{ isset($maxHumidity)?$maxHumidity*100/1024:0 }}%; height: 4px;" aria-valuenow="{{ isset($maxHumidity)?$maxHumidity*100/1024:0 }}" aria-valuemin="0" aria-valuemax="100" class="progress-bar bg-blue"></div>
                       </div>
                     </div>
-                    <div class="number"><strong>{{ $maxHumidity }}</strong></div>
+                    <div class="number"><strong>{{ $maxHumidity or 0 }}</strong></div>
                   </div>
                 </div>
                 <!-- Item -->
@@ -230,10 +234,10 @@
                     <div class="icon bg-orange"><i class="fa fa-thermometer-quarter"></i></div>
                     <div class="title"><span>Lowest<br>Temp.</span>
                       <div class="progress">
-                        <div role="progressbar" style="width: {{ $lowTemp }}%; height: 4px;" aria-valuenow="{{ $lowTemp }}" aria-valuemin="0" aria-valuemax="100" class="progress-bar bg-red"></div>
+                        <div role="progressbar" style="width: {{ $lowTemp or 0 }}%; height: 4px;" aria-valuenow="{{ $lowTemp or 0}}" aria-valuemin="0" aria-valuemax="100" class="progress-bar bg-orange"></div>
                       </div>
                     </div>
-                    <div class="number"><strong>{{ $lowTemp }}</strong></div>
+                    <div class="number"><strong>{{ $lowTemp or 0 }}</strong></div>
                   </div>
                 </div>
                 <!-- Item -->
@@ -242,10 +246,10 @@
                     <div class="icon bg-red"><i class="fa fa-thermometer-quarter"></i></div>
                     <div class="title"><span>Highest<br>Temp.</span>
                       <div class="progress">
-                        <div role="progressbar" style="width: {{ $maxTemp }}%; height: 4px;" aria-valuenow="{{ $maxTemp }}" aria-valuemin="0" aria-valuemax="100" class="progress-bar bg-green"></div>
+                        <div role="progressbar" style="width: {{ $maxTemp or 0}}%; height: 4px;" aria-valuenow="{{ $maxTemp or 0 }}" aria-valuemin="0" aria-valuemax="100" class="progress-bar bg-red"></div>
                       </div>
                     </div>
-                    <div class="number"><strong>{{ $maxTemp }}</strong></div>
+                    <div class="number"><strong>{{ $maxTemp or 0}}</strong></div>
                   </div>
                 </div>
                 <!-- Item -->
@@ -282,20 +286,21 @@
                       <h2 class="h3">Logs   </h2>
                     </div>
                     <div class="card-body no-padding">
+                    @isset($data)
                     @foreach ($data['notifications'] as $notification)
                       <div class="item d-flex align-items-center">
                         <div class="text"><a href="#">
                             <h3 class="h5">{{ $notification->message }}</h3></a><small>Posted on {{ $notification->created_at }}.   </small></div>
                       </div>
                     @endforeach
+                    @endisset
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </section>
-          @endisset
-
+          
           <!-- Page Footer-->
           <footer class="main-footer">
             <div class="container-fluid">
@@ -319,142 +324,143 @@
     <script src="/vendor/bootstrap/js/bootstrap.min.js"></script>
     <script src="/vendor/jquery.cookie/jquery.cookie.js"> </script>
     <script src="/vendor/jquery-validation/jquery.validate.min.js"></script>
-    <script src="/vendor/bootstrap-datepicker/js/bootstrap-datepicker.min.js"></script>
     <script src="/vendor/moment.js/moment.min.js"></script>
+    <script src="/vendor/datetimepicker/js/bootstrap-datetimepicker.min.js"></script>
     <script src="/vendor/chart.js/Chart.min.js"></script>
     <script src="/js/mqttws31.js"></script>
     <script src="/js/front.js"></script>
     <script>
-      'use strict';
+      $(document).ready(function(){
+        'use strict';
 
-      $("div.loading").fadeOut('slow');
+        $("div.loading").fadeOut('slow');
 
-      $('.datepicker').datepicker({
-        format: 'yyyy-mm-dd',
-        startDate: '-3d'
-      });
+        $('#datetimepicker1').datetimepicker();
+        $('#datetimepicker2').datetimepicker();
+        
+        let chartColors = {
+            red: 'rgb(255, 99, 132)',
+            redA: 'rgba(255, 99, 132, 0.1)',
+            orange: 'rgb(255, 159, 64)',
+            orangeA: 'rgba(255, 159, 64, 0.1)',
+            yellow: 'rgb(255, 205, 86)',
+            yellowA: 'rgba(255, 205, 86, 0.1)',
+            green: 'rgb(75, 192, 192)',
+            greenA: 'rgba(75, 192, 192, 0.2)',
+            blue: 'rgb(54, 162, 235)',
+            blueA: 'rgba(54, 162, 235, 0.1)',
+            purple: 'rgb(153, 102, 255)',
+            purpleA: 'rgba(153, 102, 255, 0.1)',
+            grey: 'rgb(201, 203, 207)',
+            greyA: 'rgba(201, 203, 207, 0.1)'
+        };
+
       
+        var legendState = true;
+        if ($(window).outerWidth() < 576) {
+            legendState = false;
+        }
 
       @isset($data)
-      var legendState = true;
-      if ($(window).outerWidth() < 576) {
-          legendState = false;
-      }
+        var LINECHART = $("#lineChart")
+        var datas = [
+          @foreach($data['logs'] as $log)
+          {
+            'temperature': {{ $log->temperature }},
+            'humidity': {{ $log->humidity }},
+            'pump': {{ $log->pump }},
+            'created_at': '{{ $log->created_at }}'
+          },
+          @endforeach
+        ];
 
-      var LINECHART = $("#lineChart")
-      var datas = [
-        @foreach($data['logs'] as $log)
-        {
-          'temperature': $log->temperature,
-          'humidity': $log->humidity,
-          'pump': $log->pump,
-          'created_at': $log->created_at
-        },
-        @endforeach
-      ];
-      var myLineChart = new Chart(LINECHART, {
-            type: 'line',
-            data: data(),
-            options: options
-        });
-
-      var options = {
-        responsive: true,
-        hoverMode: 'index',
-        stacked: false,
-        title:{
-            display: true,
-            text:'Realtime Chart'
-        },
-        scales: {
-            yAxes: [{
-                label: "Temperature",
-                type: "linear", // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
-                display: true,
-                position: "left",
-                id: "y-axis-1",
-                ticks: {
-                    min: 100,
-                    max: 0
-                }
-            }, {
-                label: "Humidity",
-                type: "linear", // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
-                display: true,
-                position: "right",
-                id: "y-axis-2",
-                ticks: {
-                    min: 1024,
-                    max: 0
-                },
-
-                // grid line settings
-                // gridLines: {
-                //     drawOnChartArea: true, // only want the grid lines for one axis to show up
-                // },
-            }],
-            xAxes: [{
-                type: "time",
-                time: {
-                    unit: "minute",
-                    displayFormats: {
-                        minute: "YY/MM/DD HH:mm"
+        let data = function() {
+            return {
+                labels : datas.map(d => d['created_at']),
+                datasets : [
+                    {
+                        label: "Temperature",
+                        borderColor: chartColors.red,
+                        backgroundColor: chartColors.redA,
+                        fill: false,
+                        data : datas.map(d => d['temperature']),
+                        yAxisID: "y-axis-1"
+                    },
+                    {
+                        label: "Humidity",
+                        borderColor: chartColors.blue,
+                        backgroundColor: chartColors.blueA,
+                        fill: false,
+                        data : datas.map(d => d['humidity']),
+                        yAxisID: "y-axis-2"
+                    },
+                    {
+                        label: "Pump",
+                        borderColor: chartColors.green,
+                        backgroundColor: chartColors.greenA,
+                        fill: true,
+                        data : datas.map(d => d['pump']?100:0),
+                        yAxisID: "y-axis-1"
                     }
-                }
-            }],
+                ]
+            }
         }
-      };
-
-      let chartColors = {
-          red: 'rgb(255, 99, 132)',
-          redA: 'rgba(255, 99, 132, 0.1)',
-          orange: 'rgb(255, 159, 64)',
-          orangeA: 'rgba(255, 159, 64, 0.1)',
-          yellow: 'rgb(255, 205, 86)',
-          yellowA: 'rgba(255, 205, 86, 0.1)',
-          green: 'rgb(75, 192, 192)',
-          greenA: 'rgba(75, 192, 192, 0.2)',
-          blue: 'rgb(54, 162, 235)',
-          blueA: 'rgba(54, 162, 235, 0.1)',
-          purple: 'rgb(153, 102, 255)',
-          purpleA: 'rgba(153, 102, 255, 0.1)',
-          grey: 'rgb(201, 203, 207)',
-          greyA: 'rgba(201, 203, 207, 0.1)'
-      };
 
 
-      let data = function() {
-          return {
-              labels : datas.map(d => d['created_at']),
-              datasets : [
-                  {
-                      label: "Temperature",
-                      borderColor: chartColors.red,
-                      backgroundColor: chartColors.redA,
-                      fill: false,
-                      data : datas.map(d => d['temperature']),
-                      yAxisID: "y-axis-1"
-                  },
-                  {
-                      label: "Humidity",
-                      borderColor: chartColors.blue,
-                      backgroundColor: chartColors.blueA,
-                      fill: false,
-                      data : datas.map(d => d['humidity']),
-                      yAxisID: "y-axis-2"
-                  },
-                  {
-                      label: "Pump",
-                      borderColor: chartColors.green,
-                      backgroundColor: chartColors.greenA,
-                      fill: true,
-                      data : datas.map(d => d['pump']?100:0),
-                      yAxisID: "y-axis-1"
+        var options = {
+          responsive: true,
+          hoverMode: 'index',
+          stacked: false,
+          title:{
+              display: true,
+              text:'History Chart from {{ $from }} to {{ $to }}'
+          },
+          scales: {
+              yAxes: [{
+                  label: "Temperature",
+                  type: "linear", // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
+                  display: true,
+                  position: "left",
+                  id: "y-axis-1",
+                  ticks: {
+                      min: 100,
+                      max: 0
                   }
-              ]
+              }, {
+                  label: "Humidity",
+                  type: "linear", // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
+                  display: true,
+                  position: "right",
+                  id: "y-axis-2",
+                  ticks: {
+                      min: 1024,
+                      max: 0
+                  },
+
+                  // grid line settings
+                  // gridLines: {
+                  //     drawOnChartArea: true, // only want the grid lines for one axis to show up
+                  // },
+              }],
+              xAxes: [{
+                  type: "time",
+                  time: {
+                      unit: "minute",
+                      displayFormats: {
+                          minute: "YY/MM/DD HH:mm"
+                      }
+                  }
+              }],
           }
-      }
+        };
+
+        var myLineChart = new Chart(LINECHART, {
+              type: 'line',
+              data: data(),
+              options: options
+          });
     @endisset
+      });   
     </script>
   </body>
 </html>

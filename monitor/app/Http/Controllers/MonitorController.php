@@ -27,7 +27,7 @@ class MonitorController extends Controller
         $logs = Log::orderBy('created_at', 'desc')
             ->take(60)
             ->get();
-
+        $logs = array_reverse($logs->toArray());
         return $logs;
     }
 
@@ -42,16 +42,16 @@ class MonitorController extends Controller
         return redirect("/history/${from}/${to}");
     }
 
-    public function historyView($from, $to) {
+    public function historyView(Request $request) {
         try {
-            $from = Carbon::createFromFormat('Y-m-d', $from);
-            $to = Carbon::createFromFormat('Y-m-d', $to)->addDays(1);
+            $from = Carbon::createFromFormat('m/d/Y g:i a', $request->input('from'));
+            $to = Carbon::createFromFormat('m/d/Y g:i a', $request->input('to'));
         } catch(Exception $e) {
             abort(400);
         }
         $logs = Log::where('created_at', '>', $from)->where('created_at', '<', $to)
-            ->orderBy('created_at', 'desc')->get();
-        $notifications = Log::where('created_at', '>', $from)->where('created_at', '<', $to)
+            ->orderBy('created_at', 'asc')->get();
+        $notifications = Notification::where('created_at', '>', $from)->where('created_at', '<', $to)
             ->orderBy('created_at', 'desc')->get();
 
         $maxTemp = 0;
@@ -67,9 +67,9 @@ class MonitorController extends Controller
                 $lowTemp = $log->temperature;
 
             if($log->humidity > $maxHumidity)
-                $maxHumidity = $log->temperature;
+                $maxHumidity = $log->humidity;
             if($log->humidity < $lowHumidity)
-                $lowHumidity = $log->temperature;
+                $lowHumidity = $log->humidity;
         }
 
         return view('history', ['data' => [
@@ -88,13 +88,20 @@ class MonitorController extends Controller
     public function log($from, $to) {
         try {
             $from = Carbon::createFromFormat('Y-m-d', $from);
+            $from->hour = 0;
+            $from->minute = 0;
+            $from->second = 0;
             $to = Carbon::createFromFormat('Y-m-d', $to)->addDays(1);
+            $to->hour = 0;
+            $to->minute = 0;
+            $to->second = 0;
         } catch(Exception $e) {
             abort(400);
         }
         $logs = Log::where('created_at', '>', $from)->where('created_at', '<', $to)
         ->orderBy('created_at', 'desc')->get();
 
+        $logs = array_reverse($logs->toArray());
         return $logs;
     }
 

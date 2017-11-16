@@ -31,9 +31,11 @@ pump_time = time.time()
 
 status = Event()
 
+weight = 3.0
+
 
 def process_data(queue):
-    global temperature, humidity, temperature_time, humidity_time, pump_time
+    global temperature, humidity, temperature_time, humidity_time, pump_time, weight
     while True:
         if not queue.empty():
             data = queue.get()
@@ -45,20 +47,23 @@ def process_data(queue):
                 try:
                     node_name = config['nodes'][short_address]
                     if node_name == 'temperature':
-                        r = 5.0e2 / (1023.0 / float(sensor1) - 1)
+                        temperature_time = time.time()
+                        if sensor1 == 0:
+                            continue
+                        r = 10.0e2 / (1023.0 / float(sensor1) - 1)
                         b = 4.0e3
                         r0 = 10.0e3
                         t0 = 298.0
-                        temperature = 1.0 / ((1.0 / t0) + ((1.0 / b) * log(r / r0))) - 273
-                        temperature_time = time.time()
+                        temperature = (1.0 / ((1.0 / t0) + ((1.0 / b) * log(r / r0)))) - 273
                     elif node_name == 'humidity':
-                        humidity = int(sensor1)
+                        new_humidity = int(sensor1)
+                        humidity = int(((weight - 1) * humidity + new_humidity) / weight)
                         humidity_time = time.time()
                     elif node_name == 'pump':
                         pump_time = time.time()
 
-                except:
-                    print "Unknow node ({})".format(short_address)
+                except Exception as e:
+                    print "Error ({})".format(str(e))
             elif command_code == 8:
                 status.set()
 
@@ -74,7 +79,7 @@ def logger(mqtt_client):
             r = requests.post(config['log']['value'], data={
                 'temperature': temperature,
                 'humidity': humidity,
-                'pump': pump
+                'pump': 1 if pump else 0
             })
             print "Logger sent {}".format(r.status_code)
             mqtt_client.publish(config['mqtt']['root_topic'] + "/value", json.dumps({
@@ -101,7 +106,7 @@ def logger(mqtt_client):
                 humidity_online = True
 
             if time.time() - pump_time > 30:
-                if temperature_online:
+                if pump_online:
                     send_notification("Pump Node is offline")
                     pump_online = False
             elif not pump_online:
@@ -109,7 +114,7 @@ def logger(mqtt_client):
                 pump_online = True
 
         except Exception as e:
-            print "Logger Error " + e.value
+            print "Logger Error " + str(e)
         time.sleep(5)
 
 
@@ -130,7 +135,7 @@ def send_notification(message):
 
 def auto_pump_condition():
     global temperature, humidity, pump
-    time.sleep(10)
+    time.sleep(3)
     prev_pump = pump
     sent = False
     while True:
@@ -141,27 +146,29 @@ def auto_pump_condition():
         if auto_pump:
             if should_turn_on_pump and not pump:
                 pump = True
-                pump_is_responding = on_pump(serial_connection)
+                # pump_is_responding = on_pump(serial_connection)
                 send_notification("Humidity is low. Turn on pump!")
             if should_turn_off_pump and pump:
                 pump = False
-                pump_is_responding = off_pump(serial_connection)
+                # pump_is_responding = off_pump(serial_connection)
                 send_notification("Humidity is Good Now. Turn off pump")
-        else:
-            if pump is not prev_pump:
-                if pump:
-                    pump_is_responding = on_pump(serial_connection)
-                else:
-                    pump_is_responding = off_pump(serial_connection)
+        # else:
+        #     if pump is not prev_pump:
+        #         if pump:
+        #             pump_is_responding = on_pump(serial_connection)
+        #         else:
+        #             pump_is_responding = off_pump(serial_connection)
+
+        pump_is_responding = on_pump(serial_connection) if pump else off_pump(serial_connection)
 
         if not pump_is_responding and not sent:
             sent = True
             send_notification("Pump is not responding. Pls check!")
-        else:
+        elif pump_is_responding:
             sent = False
         prev_pump = pump
 
-        time.sleep(1)
+        time.sleep(3)
 
 
 def send_command(serial, command):
@@ -177,14 +184,14 @@ def send_command(serial, command):
 def on_pump(serial):
     for address, name in config['nodes'].iteritems():
         if name == "pump":
-            return send_command(serial, "ONOFFPORT 255 0 {} 11 01".format(address))
+            return send_command(serial, "ONOFFPORT 255 0 {} 01".format(address))
     return False
 
 
 def off_pump(serial):
     for address, name in config['nodes'].iteritems():
         if name == "pump":
-            return send_command(serial, "ONOFFPORT 255 0 {} 11 00".format(address))
+            return send_command(serial, "ONOFFPORT 255 0 {} 00".format(address))
     return False
 
 
